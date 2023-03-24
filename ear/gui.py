@@ -49,7 +49,14 @@ class EarTrayApp(QObject):
         logging.debug(f'ICON_PATH: {ICON_PATH}')
 
         tray_menu = QMenu()
+        self.initialize_tray_menu(tray_menu)
 
+        self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.show()
+
+
+    def initialize_tray_menu(self, tray_menu: QMenu) -> None:
+        """Add buttons to the tray menu."""
         start_action = tray_menu.addAction("Start")
         start_action.triggered.connect(self.start_transcribe)
 
@@ -65,9 +72,7 @@ class EarTrayApp(QObject):
         exit_action = tray_menu.addAction("Exit")
         exit_action.triggered.connect(self.exit_app)
 
-        self.tray_icon.setContextMenu(tray_menu)
-        self.tray_icon.show()
-
+        
     def start_transcribe(self):
         logging.debug("Starting transcribing")
         asyncio.run(start_transcribe())
@@ -99,7 +104,8 @@ class EarTrayApp(QObject):
         self.tray_icon.hide()
         QCoreApplication.instance().quit()
 
-if __name__ == '__main__':
+
+def main():
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -109,4 +115,8 @@ if __name__ == '__main__':
     app.setOrganizationName('Jun Jiang')
 
     ex = EarTrayApp()
-    sys.exit(app.exec())
+    sys.exit(app.exec()) 
+
+
+if __name__ == '__main__':
+    main()

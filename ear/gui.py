@@ -13,6 +13,15 @@ from PyQt6.QtCore import QObject, QCoreApplication
 from transcribe import transcribe_audio
 from collect import collect_audio
 
+from PyQt6.QtCore import QThread
+
+class TranscribeThread(QThread):
+    def __init__(self, parent=None):
+        super(TranscribeThread, self).__init__(parent)
+
+    def run(self):
+        asyncio.run(start_transcribe())
+
 
 def get_asset_path(path: str):
     if getattr(sys, 'frozen', False):
@@ -76,7 +85,10 @@ class EarTrayApp(QObject):
         
     def start_transcribe(self):
         logging.debug("Starting transcribing")
-        asyncio.run(start_transcribe())
+        if not hasattr(self, 'transcribe_thread'):
+            self.transcribe_thread = TranscribeThread()
+        if not self.transcribe_thread.isRunning():
+            self.transcribe_thread.start()
 
     def pause_transcribe(self):
         logging.debug("Pausing transcribing")

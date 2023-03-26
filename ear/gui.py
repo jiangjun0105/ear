@@ -31,14 +31,15 @@ class MyWindow(QWidget):
         self.hide()
 
 async def start_transcribe():
-    queue = asyncio.Queue()
+    # queue = asyncio.Queue()
 
-    collector_task = asyncio.create_task(collect_audio(queue))
-    transcriber_task = asyncio.create_task(transcribe_audio(queue))
+    collector_task = asyncio.create_task(collect_audio(recording_length=5))
+    transcriber_task = asyncio.create_task(transcribe_audio())
 
     await asyncio.gather(collector_task, transcriber_task)
 
 ICON_PATH = get_asset_path("asset/ear.png")
+
 
 class EarTrayApp(QObject):
     def __init__(self):

@@ -1,2 +1,6 @@
 openai
 pyqt6
+pyaudio  # FIXME: Needs `brew install portaudio`
+pydub  # FIXME: Needs ffmpeg or libav for non-wav formats
+numpy
+aiofiles # FIXME: Maybe not needed

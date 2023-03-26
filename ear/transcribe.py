@@ -56,18 +56,24 @@ async def transcribe_audio(
     if text_file is None:
         text_file = constants.CACHE_PATH / "transcriptions.txt"
 
-    prompt = "始めます、写し込んでください。",  # Instruct to generate punctuated text
+    # prompt = "始めます、写し込んでください。",  # Instruct to generate punctuated text
+    init_prompt = "音声が検出されない場合は、空の文字列を出力してください。"  # Instruct to generate punctuated text
+    prompt = init_prompt
     while True:
         audio_file = await watch_directory(input_dir)
         text = await _transcribe(audio_file, prompt=prompt)
-        if text == prompt:
-            continue
-        prompt = text
+        if text != prompt:
+            logging.debug(f"Recognized text: {text}")
+            logging.debug(f"Prompt: {prompt}")
+            prompt = text
 
-        async with aiofiles.open(text_file, "a") as f:
-            await f.write(f"{text}\n")
+            async with aiofiles.open(text_file, "a") as f:
+                await f.write(f"{text}\n")
 
-        logging.info(f"Wrote text to {text_file}")
+            logging.info(f"Wrote text to {text_file}")
+        else:
+            prompt = init_prompt
+            logging.info("Recognized text unchanged, not writing to file")
 
         # Move the processed audio file to the done_audio directory
         done_audio_file = done_audio_dir / audio_file.name

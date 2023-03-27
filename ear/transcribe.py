@@ -13,8 +13,11 @@ import openai
 import constants
 
 
-# TODO: Change this to a function reading api key from config file
-openai.api_key = "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"
+def read_api_key(file: Path = Path("~/.openai/api_key").expanduser()) -> str:
+    with open(file) as f:
+        return f.read().strip()
+
+openai.api_key = read_api_key()
 
 
 async def _transcribe(audio_file: Path, prompt: str = "") -> str:

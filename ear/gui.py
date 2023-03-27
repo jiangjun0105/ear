@@ -63,6 +63,7 @@ class EarTrayApp(QObject):
 
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
+        self.start_transcribe()
 
 
     def initialize_tray_menu(self, tray_menu: QMenu) -> None:
@@ -70,14 +71,14 @@ class EarTrayApp(QObject):
         start_action = tray_menu.addAction("Start")
         start_action.triggered.connect(self.start_transcribe)
 
-        pause_action = tray_menu.addAction("Pause")
-        pause_action.triggered.connect(self.pause_transcribe)
+        # pause_action = tray_menu.addAction("Pause")
+        # pause_action.triggered.connect(self.pause_transcribe)
 
-        end_action = tray_menu.addAction("End")
-        end_action.triggered.connect(self.end_transcribe)
+        # end_action = tray_menu.addAction("End")
+        # end_action.triggered.connect(self.end_transcribe)
 
-        show_action = tray_menu.addAction("Show")
-        show_action.triggered.connect(self.show_window)
+        # show_action = tray_menu.addAction("Show")
+        # show_action.triggered.connect(self.show_window)
 
         exit_action = tray_menu.addAction("Exit")
         exit_action.triggered.connect(self.exit_app)

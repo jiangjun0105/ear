@@ -4,3 +4,6 @@ pyaudio  # FIXME: Needs `brew install portaudio`
 pydub  # FIXME: Needs ffmpeg or libav for non-wav formats
 numpy
 aiofiles # FIXME: Maybe not needed
+webrtcvad # For voice activity detection
+# noisereduce # FIXME: May not needed, for noise reduction
+pysoundfile # Potential replacement for pyaudio

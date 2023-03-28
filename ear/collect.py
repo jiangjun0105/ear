@@ -13,12 +13,15 @@ import queue
 import time
 from typing import Callable
 import constants
+import webrtcvad
 
 # Constants
-SAMPLE_RATE = 44100
+SAMPLE_RATE = 16000
 NUM_CHANNELS = 1
-BUFFER_SIZE = 1024
-
+FORMAT = pyaudio.paInt16
+FRAME_DURATION_MS = 30
+BUFFER_SIZE = SAMPLE_RATE * FRAME_DURATION_MS // 1000
+NOISE_THRESHOLD = 15
 
 # Callback function to process audio
 def callback(audio_queue: queue.Queue) -> Callable:
@@ -30,28 +33,40 @@ def callback(audio_queue: queue.Queue) -> Callable:
     return _callback
 
 # Function to save audio data to WAV files
-def save_audio(audio_queue: queue.Queue, recording_length: int) -> None:
+def save_audio(audio_queue: queue.Queue, recording_length: int, detect_voice=True) -> None:
+    # Number of frames to collect for this audio file
+    num_frames = int(SAMPLE_RATE / BUFFER_SIZE * recording_length)
+    if detect_voice:
+        # Set VAD aggressiveness (0-3, 3 is most aggressive)
+        vad = webrtcvad.Vad(3)  
+        has_voice = 0
+
     while True:
-        audio_data = np.array([], dtype=np.int16)
+        frames = []
         start_time = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
 
         # Collect recording_length seconds of audio data
         print(f"Debug: {type(audio_queue)}, {type(recording_length)}")
-        for _ in range(int(SAMPLE_RATE / BUFFER_SIZE * recording_length)):
-            audio_data = np.concatenate((audio_data, audio_queue.get()))
+        for _ in range(num_frames):
+            one_frame = audio_queue.get().tobytes()
+            frames.append(one_frame)
+
+            if detect_voice and vad.is_speech(one_frame, SAMPLE_RATE):
+                has_voice += 1
+
+        if detect_voice and has_voice < NOISE_THRESHOLD:
+            logging.info("No voice detected, skipping")
+            continue
 
         # Convert raw audio data to an AudioSegment
         audio_segment = AudioSegment(
-            audio_data.tobytes(), sample_width=2, frame_rate=SAMPLE_RATE, channels=NUM_CHANNELS
+            b''.join(frames), sample_width=2, frame_rate=SAMPLE_RATE, channels=NUM_CHANNELS
         )
 
         # Save the audio segment as a WAV file
         output_filename = constants.CACHE_PATH / "new_audio" / f"{start_time}.wav"
         output_filename.parent.mkdir(parents=True, exist_ok=True)
         audio_segment.export(output_filename, format="wav")
-        # Put the output_filename in the output_queue
-        # run_coroutine_threadsafe(file_queue.put(output_filename), asyncio.get_event_loop())
-        # await file_queue.put(output_filename)
         logging.info("Finished collecting audio")
 
 
@@ -60,7 +75,7 @@ async def collect_audio(recording_length: int = 30) -> None:
 
     # Set up pyaudio stream
     audio = pyaudio.PyAudio()
-    stream = audio.open(format=pyaudio.paInt16,
+    stream = audio.open(format=FORMAT,
                         channels=NUM_CHANNELS,
                         rate=SAMPLE_RATE,
                         input=True,

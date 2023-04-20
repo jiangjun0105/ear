@@ -6,7 +6,14 @@ import signal
 import logging
 from pathlib import Path
 
-from PyQt6.QtWidgets import QApplication, QMenu, QSystemTrayIcon, QVBoxLayout, QWidget, QTextEdit
+from PyQt6.QtWidgets import (
+    QApplication,
+    QMenu,
+    QSystemTrayIcon,
+    QVBoxLayout,
+    QWidget,
+    QTextEdit,
+)
 from PyQt6.QtGui import QIcon
 from PyQt6.QtCore import QObject, QCoreApplication
 
@@ -14,6 +21,7 @@ from transcribe import transcribe_audio
 from collect import collect_audio
 
 from PyQt6.QtCore import QThread
+
 
 class TranscribeThread(QThread):
     def __init__(self, parent=None):
@@ -24,12 +32,13 @@ class TranscribeThread(QThread):
 
 
 def get_asset_path(path: str):
-    if getattr(sys, 'frozen', False):
+    if getattr(sys, "frozen", False):
         base_dir = Path(sys._MEIPASS)
     else:
         base_dir = Path(__file__).parent.parent
 
     return str(base_dir / path)
+
 
 class MyWindow(QWidget):
     def __init__(self, parent=None):
@@ -39,6 +48,7 @@ class MyWindow(QWidget):
         event.ignore()
         self.hide()
 
+
 async def start_transcribe():
     # queue = asyncio.Queue()
 
@@ -46,6 +56,7 @@ async def start_transcribe():
     transcriber_task = asyncio.create_task(transcribe_audio())
 
     await asyncio.gather(collector_task, transcriber_task)
+
 
 ICON_PATH = get_asset_path("asset/ear.png")
 
@@ -56,7 +67,7 @@ class EarTrayApp(QObject):
 
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(QIcon(ICON_PATH))
-        logging.debug(f'ICON_PATH: {ICON_PATH}')
+        logging.debug(f"ICON_PATH: {ICON_PATH}")
 
         tray_menu = QMenu()
         self.initialize_tray_menu(tray_menu)
@@ -64,7 +75,6 @@ class EarTrayApp(QObject):
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
         self.start_transcribe()
-
 
     def initialize_tray_menu(self, tray_menu: QMenu) -> None:
         """Add buttons to the tray menu."""
@@ -83,10 +93,9 @@ class EarTrayApp(QObject):
         exit_action = tray_menu.addAction("Exit")
         exit_action.triggered.connect(self.exit_app)
 
-        
     def start_transcribe(self):
         logging.debug("Starting transcribing")
-        if not hasattr(self, 'transcribe_thread'):
+        if not hasattr(self, "transcribe_thread"):
             self.transcribe_thread = TranscribeThread()
         if not self.transcribe_thread.isRunning():
             self.transcribe_thread.start()
@@ -98,9 +107,11 @@ class EarTrayApp(QObject):
         logging.debug("Ending transcribing")
 
     def show_window(self):
-        if not hasattr(self, 'window'):
+        if not hasattr(self, "window"):
             self.text_edit = QTextEdit()
-            self.text_edit.setPlaceholderText(f"Transcribed text will be shown here.\n{ICON_PATH}")
+            self.text_edit.setPlaceholderText(
+                f"Transcribed text will be shown here.\n{ICON_PATH}"
+            )
             self.text_edit.setFixedSize(500, 500)
 
             self.window = MyWindow()
@@ -120,17 +131,19 @@ class EarTrayApp(QObject):
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(
+        level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
+    )
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     app = QApplication(sys.argv)
 
-    app.setApplicationName('Ear')
-    app.setOrganizationName('Jun Jiang')
+    app.setApplicationName("Ear")
+    app.setOrganizationName("Jun Jiang")
 
     ex = EarTrayApp()
-    sys.exit(app.exec()) 
+    sys.exit(app.exec())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

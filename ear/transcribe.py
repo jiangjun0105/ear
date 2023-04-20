@@ -17,6 +17,7 @@ def read_api_key(file: Path = Path("~/.openai/api_key").expanduser()) -> str:
     with open(file) as f:
         return f.read().strip()
 
+
 openai.api_key = read_api_key()
 
 
@@ -25,16 +26,12 @@ async def _transcribe(audio_file: Path, prompt: str = "") -> str:
     with open(audio_file, "rb") as f:
         logging.info(f"Start recognizing {audio_file}")
         t = await openai.Audio.atranscribe(
-            model="whisper-1", 
-            file=f, 
-            prompt=prompt,
-            language="ja"
+            model="whisper-1", file=f, prompt=prompt, language="ja"
         )
-        text = t['text']
+        text = t["text"]
         logging.info(f"Finish recognizing {audio_file}")
         logging.debug(f"Recognized text: {text}")
         return text
-
 
 
 async def watch_directory(directory: Path) -> Path:
@@ -42,14 +39,18 @@ async def watch_directory(directory: Path) -> Path:
         # FIXME: This is not efficient, but it works for now
         files = sorted(list(directory.glob("*.wav")), key=lambda f: f.stat().st_mtime)
         if files:
-            logging.debug(f"Found new audio file: {files[0]}, len({files}) unprocessed audio files")
+            logging.debug(
+                f"Found new audio file: {files[0]}, len({files}) unprocessed audio files"
+            )
             return files[0]
         else:
             await asyncio.sleep(1)
 
 
 async def transcribe_audio(
-    input_dir: Path = constants.NEW_AUDIO_PATH, done_audio_dir: Path = constants.DONE_AUDIO_PATH, text_file: Optional[Path] = None
+    input_dir: Path = constants.NEW_AUDIO_PATH,
+    done_audio_dir: Path = constants.DONE_AUDIO_PATH,
+    text_file: Optional[Path] = None,
 ) -> None:
     """Transcribes audio files in input_dir and appends results to text_file."""
 
@@ -59,8 +60,7 @@ async def transcribe_audio(
     if text_file is None:
         text_file = constants.CACHE_PATH / "transcriptions.txt"
 
-    # prompt = "始めます、写し込んでください。",  # Instruct to generate punctuated text
-    init_prompt = "音声が検出されない場合は、空の文字列を出力してください。"  # Instruct to generate punctuated text
+    init_prompt = ("始めます、写し込んでください。",)  # Instruct to generate punctuated text
     prompt = init_prompt
     while True:
         audio_file = await watch_directory(input_dir)

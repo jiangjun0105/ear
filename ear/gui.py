@@ -1,26 +1,17 @@
 from __future__ import annotations
 
 import asyncio
-import sys
-import signal
 import logging
+import signal
+import sys
 from pathlib import Path
 
-from PyQt6.QtWidgets import (
-    QApplication,
-    QMenu,
-    QSystemTrayIcon,
-    QVBoxLayout,
-    QWidget,
-    QTextEdit,
-)
-from PyQt6.QtGui import QIcon
-from PyQt6.QtCore import QObject, QCoreApplication
-
-from transcribe import transcribe_audio
 from collect import collect_audio
-
-from PyQt6.QtCore import QThread
+from PyQt6.QtCore import QCoreApplication, QObject, QThread
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import (QApplication, QMenu, QSystemTrayIcon, QTextEdit,
+                             QVBoxLayout, QWidget)
+from transcribe import transcribe_audio
 
 
 class TranscribeThread(QThread):

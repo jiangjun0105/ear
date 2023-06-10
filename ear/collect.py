@@ -4,15 +4,16 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import numpy as np
-from pydub import AudioSegment
-import threading
 import queue
+import threading
 import time
 from typing import Callable
+
 import constants
-import webrtcvad
+import numpy as np
 import sounddevice as sd
+import webrtcvad
+from pydub import AudioSegment
 
 # Constants
 SAMPLE_RATE = 16000

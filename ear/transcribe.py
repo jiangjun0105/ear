@@ -2,15 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from pathlib import Path
-import asyncio
-import aiofiles
 import os
 from pathlib import Path
 from typing import Optional
 
-import openai
+import aiofiles
 import constants
+import openai
 
 
 def read_api_key(file: Path = Path("~/.openai/api_key").expanduser()) -> str:
